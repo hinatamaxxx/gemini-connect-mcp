@@ -48,7 +48,7 @@ export async function authorize(request: Request, env: Env): Promise<Response> {
     if (oauth.codeChallengeMethod !== 'S256' || !oauth.codeChallenge || !oauth.scope.includes('gemini:ask') || oauth.scope.some(s => s !== 'gemini:ask') || url.search.length > 1800) throw new Error('Invalid OAuth request');
     if (request.method === 'GET') {
       const login = { query: url.search, state: random(), nonce: random(), phase: 'consent' };
-      const body = `<!doctype html><html lang="ja"><meta charset="utf-8"><title>Gemini Connect 接続許可</title><h1>Gemini Connect 接続許可</h1><p>このクライアントにGemini APIとJevによる振り分けの利用を許可します。実作業の依頼はGoogleへ、Jevの判断用の依頼はTypeSafeへ送信され、それぞれ所有者のAPI利用枠・料金が使われます。</p><p>クライアント: ${escape(oauth.clientId)}</p><p>戻り先: ${escape(oauth.redirectUri)}</p><p>設定された所有者のGoogleアカウントだけ接続できます。</p><form method="post"><input type="hidden" name="csrf" value="${login.state}"><button type="submit">Googleでログインして接続を許可</button></form></html>`;
+      const body = `<!doctype html><html lang="ja"><meta charset="utf-8"><title>Gemini Connect for ChatGPT 接続許可</title><h1>Gemini Connect for ChatGPT 接続許可</h1><p>このクライアントにGeminiの利用を許可します。依頼内容はGoogleへ送信されます。Gemini APIを使う場合は、このMCPの所有者が設定したAPIキーの利用枠・料金が使われます。</p><p>クライアント: ${escape(oauth.clientId)}</p><p>戻り先: ${escape(oauth.redirectUri)}</p><p>設定された所有者のGoogleアカウントだけ接続できます。</p><form method="post"><input type="hidden" name="csrf" value="${login.state}"><button type="submit">Googleでログインして接続を許可</button></form></html>`;
       return new Response(body, { headers: { ...headers, 'Content-Type': 'text/html; charset=utf-8', 'Set-Cookie': cookie(await seal(login, env)) } });
     }
     if (request.headers.get('Origin') !== env.PUBLIC_ORIGIN) throw new Error('Invalid origin');

@@ -46,6 +46,8 @@ it('real Worker: OAuth discovery, CIMD, consent, PKCE token exchange, and MCP to
   expect(screen.headers.get('content-security-policy')).toContain("form-action 'self' https://accounts.google.com;");
   expect(screen.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin');
   const html = await screen.text();
+  expect(html).toContain('Gemini Connect for ChatGPT 接続許可');
+  expect(html).not.toMatch(/TypeSafe|Jev/);
   const csrf = html.match(/name="csrf" value="([^"]+)"/)![1];
   const cookie = screen.headers.get('set-cookie')!.split(';')[0];
   for (const [target, requestHeaders, body] of [
@@ -101,7 +103,7 @@ it('real Worker: OAuth discovery, CIMD, consent, PKCE token exchange, and MCP to
     const body = await response.text();
     return JSON.parse(!body.trimStart().startsWith('{') ? body.split('\n').find(line => line.startsWith('data:'))!.slice(5) : body);
   };
-  expect((await rpc('initialize', { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'test', version: '1' } })).result.serverInfo.name).toBe('gemini-connect');
+  expect((await rpc('initialize', { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'test', version: '1' } })).result.serverInfo.name).toBe('gemini-connect-for-chatgpt');
   expect((await rpc('tools/list', {})).result.tools.map((t: any) => t.name)).toEqual(['ask_gemini']);
   const cliPlan = await rpc('tools/call', { name: 'ask_gemini', arguments: { prompt: 'Save', cli_models: ['gemini-3.8-flash-high'] } });
   expect(cliPlan.result.structuredContent.cli_context.model).toBe('gemini-3.8-flash-high');

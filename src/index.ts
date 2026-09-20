@@ -12,7 +12,7 @@ const api = {
     const owner = ctx.props as OwnerProps | undefined;
     if (!owner?.userId || owner.email !== env.OWNER_GOOGLE_EMAIL || owner.version !== env.AUTH_VERSION || !owner.scopes?.includes('gemini:ask') || await env.OAUTH_KV.get('google-owner:' + env.OWNER_GOOGLE_EMAIL) !== owner.userId) return new Response('Forbidden', { status: 403 });
     return createMcpHandler(() => {
-      const server = new McpServer({ name: 'gemini-connect', version: '1.6.0' }, { instructions: `
+      const server = new McpServer({ name: 'gemini-connect-for-chatgpt', title: 'Gemini Connect for ChatGPT', version: '1.6.1' }, { instructions: `
 必要なときだけGeminiを呼び、結果と出典を検証・編集・統合する。通常はwriting_rules=false、文章補正はtrue。最新Flash・high思考を使う。秘密や会話全体を送らない。
 CodexはローカルAntigravity CLIを使う。ホーム配下 .gemini-connect/ask-antigravity.mjs をNodeで --check 実行し、取得したcli_modelsをask_geminiへ渡す。この場合APIは実行されずcli_contextが返る。
 一時UTF-8 JSONファイルへ {"prompt":"依頼と背景","cli_context":返されたcli_context} を保存し、node <ホーム>/.gemini-connect/ask-antigravity.mjs <JSONファイル絶対パス> を実行、終了後入力ファイルを削除する。パスを適切に引用し、本文・チケットをシェル引数へ展開しない。ルールはスクリプトが直接取得する。チケットは5分有効、期限切れならcli_models付きで再準備する。
@@ -53,7 +53,7 @@ export default {
         authorizeEndpoint: '/authorize', tokenEndpoint: '/oauth/token',
         scopesSupported: ['gemini:ask'], clientIdMetadataDocumentEnabled: true,
         accessTokenTTL: 3600, refreshTokenTTL: 30 * 86400,
-        resourceMetadata: { resource: `${env.PUBLIC_ORIGIN}/mcp`, authorization_servers: [env.PUBLIC_ORIGIN], scopes_supported: ['gemini:ask'], resource_name: 'Gemini Connect' },
+        resourceMetadata: { resource: `${env.PUBLIC_ORIGIN}/mcp`, authorization_servers: [env.PUBLIC_ORIGIN], scopes_supported: ['gemini:ask'], resource_name: 'Gemini Connect for ChatGPT' },
       });
       return await provider.fetch(request, env, ctx);
     } catch { return new Response('Request failed', { status: 500 }); }
