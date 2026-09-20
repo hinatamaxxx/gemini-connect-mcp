@@ -19,7 +19,7 @@ ChatGPT から Gemini に執筆、分析、セカンドオピニオン、文章�
 このリポジトリの URL を Codex に貼り付け、次のように依頼すると、設定ファイルの準備から API キーの登録、デプロイまで案内してもらえます。
 
 ```text
-https://github.com/hinatamaxxx/gemini-connect-mcp
+https://github.com/hinatamaxxx/gemini-connect-for-chatgpt
 
 Gemini Connect for ChatGPT を、自分の Cloudflare に導入してください。
 README と実装を確認し、必要な設定とデプロイを進めてください。
@@ -49,8 +49,8 @@ API キーやシークレットはチャットに貼らずに設定できる方�
 リポジトリを取得し、依存関係のインストール、Cloudflare へのログイン、KV ネームスペースの作成を行います。
 
 ```powershell
-git clone https://github.com/hinatamaxxx/gemini-connect-mcp.git
-cd gemini-connect-mcp
+git clone https://github.com/hinatamaxxx/gemini-connect-for-chatgpt.git
+cd gemini-connect-for-chatgpt
 npm ci
 npx wrangler login
 npx wrangler kv namespace create OAUTH_KV
