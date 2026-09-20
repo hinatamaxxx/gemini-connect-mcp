@@ -25,7 +25,7 @@ ChatGPTなどCodex以外はcli_modelsを省略してAPIを実行する。ロー�
         annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: true },
         _meta: { securitySchemes: [{ type: 'oauth2', scopes: ['gemini:ask'] }] },
       }, async input => {
-        if (!(await env.GEMINI_LIMIT.limit({ key: 'owner' })).success) return { isError: true, content: [{ type: 'text', text: '呼び出し回数が多いため、1分ほど待ってください。' }] };
+        if (!(await env.GEMINI_LIMIT.limit({ key: 'owner' })).success) return { isError: true, content: [{ type: 'text', text: JSON.stringify({ source: 'mcp', category: 'local_rate_limit', message: 'MCPの呼び出し回数制限です。1分ほど待ってください。Geminiへの生成依頼は送信していません。', attempts: 0 }) }] };
         try {
           if (input.cli_models) {
             const cli_context = await issueCliContext({ model: latestCliFlash(input.cli_models), writing_rules: input.writing_rules, research: input.research }, env);
