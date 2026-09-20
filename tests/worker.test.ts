@@ -24,6 +24,8 @@ const mf = new Miniflare(convertV4MiniflareOptions({ workers: [{
     if (request.url === 'https://www.googleapis.com/oauth2/v3/certs') return Response.json({ keys: [publicJwk] });
     if (request.url === 'https://oauth2.googleapis.com/token') return Response.json({ id_token: await new SignJWT({ email: 'owner@gmail.com', email_verified: true, nonce: googleNonce, ...googleClaims }).setProtectedHeader({ alg: 'RS256', kid: 'test' }).setSubject('google-owner-123').setIssuer(googleIssuer).setAudience(googleAudience).setIssuedAt().setExpirationTime(googleExpiry).sign(badSignature ? wrongPair.privateKey : pair.privateKey) });
     if (request.url === clientId) return Response.json({ client_id: clientId, client_name: 'ChatGPT fixture', redirect_uris: [redirect], token_endpoint_auth_method: 'none', grant_types: ['authorization_code', 'refresh_token'], response_types: ['code'] });
+    if (new URL(request.url).pathname.endsWith('/models')) return Response.json({ models: [{ name: 'models/gemini-3.8-flash' }] });
+    if (request.url.includes('generativelanguage.googleapis.com') && request.method === 'POST') return Response.json({ id: 'mock', object: 'interaction', model: 'gemini-3.8-flash', status: 'in_progress' });
     if (request.url.includes('generativelanguage.googleapis.com')) return Response.json({ id: 'mock', object: 'interaction', model: 'gemini-3.8-flash', status: 'completed', steps: [{ type: 'model_output', content: [{ type: 'text', text: '疎通成功' }] }], usage: { total_input_tokens: 10, total_output_tokens: 5, total_tokens: 15 } });
     return new Response('Unexpected outbound request', { status: 500 });
   },
@@ -114,7 +116,10 @@ it('real Worker: OAuth discovery, CIMD, consent, PKCE token exchange, and MCP to
   expect((await contextResponse.json() as any).model).toBe('gemini-3.8-flash-high');
   expect((await mf.dispatchFetch(origin + '/cli-context')).status).toBe(401);
 
-  const answer = await rpc('tools/call', { name: 'ask_gemini', arguments: { prompt: '疎通テスト' } });
+  const accepted = await rpc('tools/call', { name: 'ask_gemini', arguments: { prompt: '疎通テスト' } });
+  expect(accepted.result.isError).toBe(false);
+  expect(accepted.result.structuredContent.status).toBe('in_progress');
+  const answer = await rpc('tools/call', { name: 'ask_gemini', arguments: { job_id: accepted.result.structuredContent.job_id } });
   expect(answer.result.structuredContent.text).toBe('疎通成功');
   expect(answer.result.structuredContent.usage.total_tokens).toBe(15);
   expect(JSON.stringify(answer)).not.toContain('mock-key');
